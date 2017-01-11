@@ -26,6 +26,7 @@ int main() {
     char* filename = (char*) calloc(256, sizeof (char));
     int countQuestion = 0;
     int totalLine = 0;
+    int i;
     printf("What is your first name? ");
     gets(firstname);
     printf("What is your last name? ");
@@ -38,7 +39,7 @@ int main() {
         exit(0);
     } else {
         lstQue = (QUE*) calloc(countQuestion, sizeof (QUE));
-        int i = 0;
+        i = 0;
         int questionNo = 0;
         while (i < totalLine) {
             lstQue[questionNo++] = addQuestion(file, lstQue[questionNo], &i);
