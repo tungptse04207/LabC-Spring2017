@@ -52,7 +52,7 @@ int main() {
     free(firstname);
     free(lastname);
     free(filename);
-    for(i=0; i<totalLine; i++){
+    for (i = 0; i < totalLine; i++) {
         free(file[i]);
     }
     free(file);
@@ -105,9 +105,7 @@ QUE addQuestion(char** file, QUE q, int* lineNum) {
         q.lstAnswer = NULL;
         q.trueAnswer = (char*) calloc(256, sizeof (char));
         strcpy(q.trueAnswer, file[++(*lineNum)]);
-    }
-        
-    //type MC
+    }//type MC
     else {
         q.sizeLstAnswer = atoi(file[++(*lineNum)]);
         q.lstAnswer = (char**) calloc(q.sizeLstAnswer, sizeof (char*));
@@ -166,11 +164,11 @@ int* nextQuestion(int* arr, int* size, int countQuestion) {
         do {
             check = 1;
             n = rand() % countQuestion;
-            int i;
+            int j;
 
             //check duplicate
-            for (i = 0; i < (*size); i++) {
-                if (n == arr[i]) {
+            for (j = 0; j < (*size); j++) {
+                if (n == arr[j]) {
                     check = 0;
                     break;
                 }
@@ -184,26 +182,24 @@ int* nextQuestion(int* arr, int* size, int countQuestion) {
 
 void play(char*firstname, char*lastname, int n, QUE* lstQue, int countQuestion) {
     int* arr = NULL;
-    int size = 0;
     int i = 0;
     int point = 0;
     do {
         int* answer = (char*) calloc(256, sizeof (char));
-        arr = nextQuestion(arr, &size, countQuestion);
-        show(lstQue[arr[size - 1]]);
+        arr = nextQuestion(arr, &i, countQuestion);
+        show(lstQue[arr[i - 1]]);
         gets(answer);
         if (strcmp(answer, "SKIP") == 0) {
             printf("You have selected to SKIP that quesion\n");
             break;
-        } else if (strcmp(answer, lstQue[arr[size - 1]].trueAnswer) == 0) {
-            printf("Correct, You get %d point\n", lstQue[arr[size - 1]].point);
-            point += lstQue[arr[size - 1]].point;
+        } else if (strcmp(answer, lstQue[arr[i - 1]].trueAnswer) == 0) {
+            printf("Correct, You get %d point\n", lstQue[arr[i - 1]].point);
+            point += lstQue[arr[i - 1]].point;
         } else {
-            printf("Incorrect, the answer was %s. You lose %d point\n", lstQue[arr[size - 1]].trueAnswer, lstQue[arr[size - 1]].point);
-            point -= lstQue[arr[size - 1]].point;
+            printf("Incorrect, the answer was %s. You lose %d point\n", lstQue[arr[i - 1]].trueAnswer, lstQue[arr[i - 1]].point);
+            point -= lstQue[arr[i - 1]].point;
         }
         free(answer);
-        i++;
     } while (i < n);
     printf("******************************\n");
     printf("%s %s, Your game is over\n", firstname, lastname);
