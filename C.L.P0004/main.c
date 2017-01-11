@@ -51,6 +51,10 @@ int main() {
     free(firstname);
     free(lastname);
     free(filename);
+    for(i=0; i<totalLine; i++){
+        free(file[i]);
+    }
+    free(file);
     return (EXIT_SUCCESS);
 }
 
