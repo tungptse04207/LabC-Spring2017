@@ -1,24 +1,7 @@
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   main.c
- * Author: crazyboy
- *
- * Created on January 10, 2017, 2:08 PM
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-/*
- * 
- */
 const int MAX_LENGTH = 30;
 
 char** loadFile(char* fileName, char** arrWord, int *count); //read line and save to arrWord
@@ -26,10 +9,13 @@ int exitProgram(char* mess); //yes/no to exit program
 char* lowerString(char* str); //to lower all character
 int cmpfunc(const void * a, const void * b); // compare function use in qsort()
 int binarySearch(char* word, char** arrWord, int count); // binary search algorthrim
-void isExist(char* word, char** arrWord, int count);
-int findWord(char* word, char** arrWord, int totalWord); //find possible word
+void menu(char* word, char** arrWord, int count);
+int subStr(char*, char*);
+int subSequence(char*, char*);
+int permutaion(char*, char*);
+int matchScore(char*, char*);
 
-int main(int argc, char** argv) {
+int main() {
     char** arrWord = NULL;
     char* word;
     int i, totalWord = 0;
@@ -42,12 +28,12 @@ int main(int argc, char** argv) {
         printf("Please enter the word you would like to checked: ");
         gets(word);
         word = lowerString(word);
-        isExist(word, arrWord, totalWord);
+        menu(word, arrWord, totalWord);
         free(word); //clear memory for *word
     } while (exitProgram("Would you like to enter another word? (yes/no) "));
     //clear memory for **arrWord
     for (i = 0; i < totalWord; i++) {
-        free(arrWord[i]);
+        free(*(arrWord + i));
     }
     free(arrWord);
     return (EXIT_SUCCESS);
@@ -55,7 +41,7 @@ int main(int argc, char** argv) {
 
 char** loadFile(char* fileName, char** arrWord, int *count) {
     FILE* f;
-    char* line = (char*) calloc(1, sizeof (char));
+    char* line = (char*) calloc(MAX_LENGTH, sizeof (char));
     f = fopen(fileName, "r");
     while (fgets(line, MAX_LENGTH, f) != NULL) {
         line[strlen(line) - 1] = '\0'; //clear ENTER at the end of line
@@ -65,8 +51,8 @@ char** loadFile(char* fileName, char** arrWord, int *count) {
             int newSize = (*count) + 1;
             arrWord = (char**) realloc(arrWord, newSize * sizeof (char*));
         }
-        arrWord[(*count)] = (char*) calloc(30, sizeof (char));
-        strcpy(arrWord[(*count)], line);
+        *(arrWord + (*count)) = (char*) calloc(MAX_LENGTH, sizeof (char));
+        strcpy(*(arrWord + (*count)), line);
         (*count)++;
     }
     fclose(f);
@@ -111,9 +97,9 @@ int binarySearch(char* word, char** arrWord, int count) {
     int left = 0, right = count - 1, mid;
     while (left <= right) {
         mid = (left + right) / 2;
-        if (strcmp(word, arrWord[mid]) == 0) {
+        if (strcmp(word, *(arrWord + mid)) == 0) {
             return 1;
-        } else if (strcmp(word, arrWord[mid]) < 0) {
+        } else if (strcmp(word, *(arrWord + mid)) < 0) {
             right = mid - 1;
         } else
             left = mid + 1;
@@ -121,50 +107,120 @@ int binarySearch(char* word, char** arrWord, int count) {
     return 0;
 }
 
-void isExist(char* word, char** arrWord, int count) {
+void menu(char* word, char** arrWord, int count) {
     switch (binarySearch(word, arrWord, count)) {
         case 1:
             printf("Great, %s in the dictionary\n", word);
             break;
         case 0:
             printf("Hear is the possible words you could have meant:\n");
-            if (findWord(word, arrWord, count) == 0) {
-                printf("No possible words\n");
+            int i, found = 0;
+            for (i = 0; i < count; i++) {
+                if (subStr(word, (*(arrWord + i)))
+                        || subSequence(word, *(arrWord + i))
+                        || permutation(word, *(arrWord + i))
+                        || matchScore(word, *(arrWord + i))) {
+                    puts(*(arrWord + i));
+                    found++;
+                }
+            }
+            if (found == 0) {
+                printf("Sorry, no possible for this word!!!");
             }
             break;
     }
 }
 
 /*
- * return 0 if not found or length of word <3 or >30
+ * case sub string
+ * shortStr is a child string of longStr
  */
-int findWord(char* word, char** arrWord, int totalWord) {
-    int i, j, k, count, countFoundWord = 0;
-    if (strlen(word) < 3 || strlen(word) > 30) {
+int subStr(char* shortStr, char* longStr) {
+    if (strstr(longStr, shortStr) != NULL) {
+
+        return 1;
+    }
+    return 0;
+}
+
+/*
+ * all character of shortStr exist in longSrt
+ * (follow by index)
+ * ex: "our" and "computer"
+ */
+int subSequence(char* shortStr, char* longStr) {
+    while (*shortStr != '\0') {
+        while (*shortStr != *longStr && *longStr != '\0') {
+            *longStr++;
+        }
+        if (*longStr == '\0') {
+            break;
+        }
+        if (*shortStr == *longStr) {
+            *shortStr++;
+            *longStr++;
+        }
+    }
+    if (*shortStr == '\0') {
+
+        return 1;
+    }
+    return 0;
+}
+
+/*
+ * str1 and str2 must be same length
+ * all character of str1 exist in str2 but dont care about index
+ * ex: "the" and "eth"
+ */
+int permutation(char* str1, char* str2) {
+    if (strlen(str1) != strlen(str2)) {
         return 0;
     }
-    for (i = 0; i < totalWord; i++) {
-        count = 0;
-        if (strlen(arrWord[i]) >= 3) {
-            char tmp[30];
-            strcpy(tmp, arrWord[i]);
-            for (j = 0; j < strlen(word); j++) {
-                for (k = 0; k < strlen(tmp); k++) {
-                    if ((int) word[j] == (int) tmp[k]) {
-                        tmp[k] = 'A'; //mark this character not to recheck
-                        count++;
-                        if (count == 3) {
-                            puts(arrWord[i]);
-                            countFoundWord++;
-                        }
-                        break;
-                    }
-                }
+    char* tmpStr1 = (char*) calloc(MAX_LENGTH, sizeof (char));
+    char* tmpStr2 = (char*) calloc(MAX_LENGTH, sizeof (char));
+    strcpy(tmpStr1, str1);
+    strcpy(tmpStr2, str2);
+    int i, j;
+    for (i = 0; i < strlen(tmpStr1); i++) {
+        for (j = i; j < strlen(tmpStr2); j++) {
+            if (*(tmpStr1 + i) > *(tmpStr1 + j)) {
+                char tmp = *(tmpStr1 + i);
+                (*(tmpStr1 + i)) = (*(tmpStr1 + j));
+                (*(tmpStr1 + j)) = tmp;
+            }
+            if (*(tmpStr2 + i) > *(tmpStr2 + j)) {
+                char tmp = *(tmpStr2 + i);
+                (*(tmpStr2 + i)) = (*(tmpStr2 + j));
+                (*(tmpStr2 + j)) = tmp;
             }
         }
     }
-    if (countFoundWord == 0) {
+    if (strcmp(tmpStr1, tmpStr2) == 0) {
+        free(tmpStr1);
+        free(tmpStr2);
+        return 1;
+    }
+    free(tmpStr1);
+    free(tmpStr2);
+
+    return 0;
+}
+
+/*
+ * str1 and str2 mush same lenght
+ * follow by index str1[index] must match str2[index]
+ * allow different < 3
+ */
+int matchScore(char* str1, char* str2) {
+    int match = 0;
+    if (strlen(str1) != strlen(str2)) {
         return 0;
     }
-    return 1;
+    while (*str1 != '\0') {
+        if (*str1++ != *str2++) {
+            match++;
+        }
+    }
+    return match < 3;
 }
