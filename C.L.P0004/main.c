@@ -155,6 +155,7 @@ int inputInt() {
 }
 
 int* nextQuestion(int* arr, int* size, int countQuestion) {
+    srand(time(NULL));
     if (arr == NULL) {
         arr = (int*) calloc((*size) + 1, sizeof (int));
         arr[(*size)] = (rand() % countQuestion);
